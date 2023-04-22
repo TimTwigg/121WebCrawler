@@ -11,3 +11,6 @@ cd to parent directory for repo
 > git add .
 > git commit
 > git push -u origin <branch name>
+
+# after the first push to the branch, you no longer need the flag on the push command, so it becomes:
+> git push
