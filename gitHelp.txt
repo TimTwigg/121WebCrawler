@@ -3,7 +3,7 @@ cd to parent directory for repo
 > git clone https://github.com/TimTwigg/121WebCrawler
 
 # make a new branch
-> git checkout -b <branch name>
+> git checkout --track -b <branch name>
 
 # push changes to branch
 # the commit will open an editor and ask for a commit message
