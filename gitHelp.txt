@@ -1,0 +1,16 @@
+# To set up the git repo:
+cd to parent directory for repo
+> git clone https://github.com/TimTwigg/121WebCrawler
+
+# make a new branch
+> git checkout -b <branch name>
+
+# push changes to branch
+# the commit will open an editor and ask for a commit message
+# you can also run it as ' git commit -m "<message>" '
+> git add .
+> git commit
+> git push -u origin <branch name>
+
+# after the first push to the branch, you no longer need the flag on the push command, so it becomes:
+> git push
