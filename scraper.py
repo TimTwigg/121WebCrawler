@@ -16,10 +16,21 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
-    soup = BeautifulSoup(resp.raw_response.content, "html.parser")
-    links = [l.get("href") for l in soup.find_all("a") if is_valid(l.get("href"))]
-    print(links)
+    soup = BeautifulSoup(resp.raw_response.content, "lxml")
+    links = []
+    for link in soup.find_all("a"):
+        l = link.get("href").split("#")[0].strip()
+        if len(l) < 1:
+            continue
+        if is_relative(l):
+            print(l)
+            l = url + l
+        links.append(l)
+    # print(links)
     return list()
+
+def is_relative(url):
+    return urlparse(url).scheme == ""
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
@@ -27,6 +38,14 @@ def is_valid(url):
     # There are already some conditions that return False.
     try:
         parsed = urlparse(url)
+
+        # Checks if any of the valid domains is in URL
+        # Returns False if url doesn't contain them
+        valid_domains = [".ics.uci.edu/", ".cs.uci.edu/", ".informatics.uci.edu/", ".stat.uci.edu/"]
+        if all(domain not in url for domain in valid_domains):
+            # print(url)
+            return False
+        
         if parsed.scheme not in set(["http", "https"]):
             return False
         return not re.match(
