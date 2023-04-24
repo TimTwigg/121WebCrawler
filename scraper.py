@@ -1,5 +1,5 @@
 import re
-from urllib.parse import urlparse
+from urllib.parse import urlparse, ParseResult
 from bs4 import BeautifulSoup
 
 def scraper(url, resp):
@@ -23,8 +23,13 @@ def extract_next_links(url, resp):
         if len(l) < 1:
             continue
         if is_relative(l):
-            print(l)
-            l = url + l
+            parsed_url = urlparse(url)
+            parsed_relative = urlparse(l)
+            l = ParseResult(scheme=parsed_url.scheme, netloc=parsed_url.netloc, path=parsed_relative.path,
+                            params=parsed_relative.params, query=parsed_relative.query,
+                            fragment=parsed_relative.fragment).geturl()
+
+            # print(l)
         links.append(l)
     # print(links)
     return list()
