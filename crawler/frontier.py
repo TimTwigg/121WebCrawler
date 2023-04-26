@@ -12,7 +12,8 @@ class Frontier(object):
         self.config = config
         self.to_be_downloaded = Queue()
         self.seen_count = 0
-        # data structure to hold seen sites?        
+        # data structure to hold seen sites?
+        self.bank = {}
         
         if not os.path.exists(self.config.save_file) and not restart:
             # Save file does not exist, but request to load save.
