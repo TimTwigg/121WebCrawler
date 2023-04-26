@@ -17,9 +17,12 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     soup = BeautifulSoup(resp.raw_response.content, "lxml")
-    links = []
+    links = set()
     for link in soup.find_all("a"):
-        l = link.get("href").split("#")[0].strip()
+        l = link.get("href")
+        if l is None:
+            continue
+        l = l.split("#")[0].strip()
         if len(l) < 1:
             continue
         if is_relative(l):
@@ -28,11 +31,10 @@ def extract_next_links(url, resp):
             l = ParseResult(scheme=parsed_url.scheme, netloc=parsed_url.netloc, path=parsed_relative.path,
                             params=parsed_relative.params, query=parsed_relative.query,
                             fragment=parsed_relative.fragment).geturl()
-
-            # print(l)
-        links.append(l)
-    # print(links)
-    return list()
+        links.add(l)
+    # return list(links)
+    print(f"Found: {len(links)}")
+    return list(links)[:1]
 
 def is_relative(url):
     return urlparse(url).scheme == ""
