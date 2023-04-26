@@ -39,15 +39,10 @@ def extract_next_links(url, resp):
                             params=parsed_relative.params, query=parsed_relative.query,
                             fragment=parsed_relative.fragment).geturl()
         
-        # detect repeated segments in url
-        pieces = url.split("/")
-        if len(pieces) - len(set(pieces)) > URL_REPEAT_THRESH:
-            continue
-        
         links.add(l)
     # return list(links)
-    print(f"Found: {len(links)}")
-    return list(links)[:1]
+    # return list(links)[:1]
+    return []
 
 def is_relative(url):
     return urlparse(url).scheme == ""
@@ -64,6 +59,11 @@ def is_valid(url):
         valid_domains = [".ics.uci.edu/", ".cs.uci.edu/", ".informatics.uci.edu/", ".stat.uci.edu/"]
         if all(domain not in url for domain in valid_domains):
             # print(url)
+            return False
+        
+        # detect repeated segments in url
+        pieces = url.split("/")
+        if len(pieces) - len(set(pieces)) > URL_REPEAT_THRESH:
             return False
         
         if parsed.scheme not in set(["http", "https"]):

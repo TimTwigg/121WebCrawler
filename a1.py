@@ -1,3 +1,5 @@
+from bs4 import BeautifulSoup
+
 def tokenize(input_str: str) -> list[str]:
     """File Tokenizer
 
@@ -44,18 +46,20 @@ def computeWordFrequencies(tokens: list[str]) -> dict[str:int]:
         freq[tok] = freq.get(tok, 0) + 1
     return freq
 
-# Linearithmic Time O(nlogn) where n is the number of unique frequencies in the input dict.
-# The items are sorted, and then each is examined exactly once to print.
-# Sorting the items requires O(nlogn) time, printing requires O(n), thus the time complexity
-# is dominated by the linearithmic sorting time.
-def printFrequencies(frequencies: dict[str:int]) -> None:
-    """Print the given frequencies dictionary in the format: token => frequency
+def to_tokens(htmlContent: str) -> list[str]:
+    soup = BeautifulSoup(htmlContent)
+    print(soup.prettify())
 
+def compareSiteFreqs(tokens1: list[str], tokens2: list[str]) -> float:
+    """Compare the tokens in two sites for common tokens and return the percentage of commonality
+    
     Args:
-        frequencies (dict[str:int]): the frequency dictionary to be printed
+        tokens1 (list[str]): the first token set
+        tokens2 (list[str]): the second token set
+    
+    Returns:
+        float: the average of the percentages of each set of tokens which are common
     """
     
-    # sort primarily by decreasing frequency and secondarily by token alphabetically
-    # and then unpack into key,value pairs to print
-    for (k,v) in sorted(frequencies.items(), key = lambda x: (-x[1], x[0])):
-        print(f"{k} => {v}")
+    common = set(tokens1).intersection(tokens2)
+    return ((len(common) / len(tokens1)) + (len(common) / len(tokens2))) / 2
