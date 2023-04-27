@@ -5,10 +5,9 @@ To view this markdown nicely:
 -->
 
 # 121 Web Crawler ToDo
-- Traps - url segement repetition already implemented in scraper.is_valid(). Content similarity as well? The Canvas mentions "methods discussed in lecture." Anyone know what those are?
-    - Work-in-progress for one way of doing this in `test.py`
 - Keep track of subdomains and the number of pages per subdomain. I've set up a domains data structure in the frontier. Worker should add domains and subdomains as it encounters them. The domains structure is loaded and saved by `frontier.load_bank()` and `frontier.save_bank()`
-- When finished scraping, use `frontier.bank` to calculate the 50 most common words in the entire set of pages.
+- Use robots.txt? Lecture 6.5 slides.
+- Detect redirects?
 
 ---
 
