@@ -84,4 +84,7 @@ def mergeDicts(x: dict[str: int], y: dict[str: int]) -> dict[str: int]:
     return {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
 
 def similarity(x: set[str], y: set[str]) -> float:
-    return len(x.intersection(y)) / len(x.union(y))
+    try:
+        return len(x.intersection(y)) / len(x.union(y))
+    except ZeroDivisionError:
+        return 0
