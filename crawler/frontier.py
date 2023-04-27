@@ -2,6 +2,7 @@ import os
 import shelve
 from threading import Thread, RLock
 from queue import Queue, Empty
+import json
 
 from utils import get_logger, get_urlhash, normalize
 from scraper import is_valid
@@ -12,7 +13,16 @@ class Frontier(object):
         self.config = config
         self.to_be_downloaded = Queue()
         self.seen_count = 0
-        # data structure to hold seen sites?        
+        "The number of unique sites seen."
+        self.bank: dict[str: dict[str: int]] = {}
+        """bank has the structure: \n
+                { hashedURL: { token: count } }"""
+        self.domains: dict[str: dict[str: int]]
+        """domains has the structure: \n
+                { domainURL: { subdomainURL: numPages } }
+        """
+        self.longestSiteURL = None
+        self.longestSiteLength = 0
         
         if not os.path.exists(self.config.save_file) and not restart:
             # Save file does not exist, but request to load save.
@@ -35,6 +45,7 @@ class Frontier(object):
             if not self.save:
                 for url in self.config.seed_urls:
                     self.add_url(url)
+            self.load_bank()
 
     def _parse_save_file(self):
         ''' This function can be overridden for alternate saving techniques. '''
@@ -77,4 +88,26 @@ class Frontier(object):
 
     def save_summary(self):
         with open("summary.txt", "w") as f:
-            f.write(f"Total Sites Crawled: {self.seen_count}")
+            info = f"""
+            Total Sites Crawled: {self.seen_count}
+            Number of Domains Crawled: {len(self.domains)}
+            Longest Site URL: {self.longestSiteURL}
+            Length of Longest Site: {self.longestSiteLength}
+            """
+            f.write(info)
+    
+    def save_bank(self):
+        with open("bank.json", "w") as f:
+            json.dump([self.bank, self.domains, self.longestSiteURL, self.longestSiteLength], f)
+            
+    def load_bank(self):
+        try:
+            with open("bank.json", "r") as f:
+                self.bank, self.domains, self.longestSiteURL, self.longestSiteLength = json.load(f)
+        except FileNotFoundError:
+            pass
+    
+    def save_all(self):
+        self.save.sync()
+        self.save_summary()
+        self.save_bank()
