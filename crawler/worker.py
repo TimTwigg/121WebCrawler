@@ -27,10 +27,19 @@ class Worker(Thread):
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
-            # self.frontier.bank[get_urlhash(tbd_url)] = to_tokens(resp.raw_response.content)
+            
+            # added code to keep track of info about scraped pages
+            tokens = to_tokens(resp.raw_response.content)
+            self.frontier.bank[get_urlhash(tbd_url)] = tokens
+            length = sum(tokens.items(), key = lambda x: x[1])
+            if length > self.frontier.longestSiteLength:
+                self.frontier.longestSiteLength = length
+                self.frontier.longestSiteURL = tbd_url
+            #
+            
             scraped_urls = scraper.scraper(tbd_url, resp)
             for scraped_url in scraped_urls:
                 self.frontier.add_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)
-        self.frontier.save_summary()
+        self.frontier.save_all()

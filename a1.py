@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from bs4.element import Comment
 
 def tokenize(input_str: str) -> list[str]:
     """File Tokenizer
@@ -46,9 +47,18 @@ def computeWordFrequencies(tokens: list[str]) -> dict[str:int]:
         freq[tok] = freq.get(tok, 0) + 1
     return freq
 
-def to_tokens(htmlContent: str) -> list[str]:
+def tag_visible(element):
+    if element.parent.name in ["style", "script", "head", "title", "meta", "[document]"]:
+        return False
+    if isinstance(element, Comment):
+        return False
+    return True
+
+def to_tokens(htmlContent: str) -> dict[str: int]:
     soup = BeautifulSoup(htmlContent)
-    print(soup.prettify())
+    texts = [t for t in soup.findAll(text = True) if tag_visible(t)]
+    tokens = [tok for t in texts for tok in tokenize(t)]
+    return computeWordFrequencies(tokens)
 
 def compareSiteFreqs(tokens1: list[str], tokens2: list[str]) -> float:
     """Compare the tokens in two sites for common tokens and return the percentage of commonality
