@@ -2,6 +2,8 @@ import re
 from urllib.parse import urlparse, ParseResult
 from bs4 import BeautifulSoup
 
+URL_REPEAT_THRESH = 1
+
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
@@ -16,25 +18,31 @@ def extract_next_links(url, resp):
     #         resp.raw_response.url: the url, again
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
+    
     soup = BeautifulSoup(resp.raw_response.content, "lxml")
     links = set()
     for link in soup.find_all("a"):
         l = link.get("href")
+        # ignore <a> tags with no href
         if l is None:
             continue
+        # cut off the fragment and whitespace
         l = l.split("#")[0].strip()
         if len(l) < 1:
             continue
+        
+        # convert relative urls to absolute
         if is_relative(l):
             parsed_url = urlparse(url)
             parsed_relative = urlparse(l)
             l = ParseResult(scheme=parsed_url.scheme, netloc=parsed_url.netloc, path=parsed_relative.path,
                             params=parsed_relative.params, query=parsed_relative.query,
                             fragment=parsed_relative.fragment).geturl()
+        
         links.add(l)
     # return list(links)
-    print(f"Found: {len(links)}")
-    return list(links)[:1]
+    # return list(links)[:1]
+    return []
 
 def is_relative(url):
     return urlparse(url).scheme == ""
@@ -51,6 +59,11 @@ def is_valid(url):
         valid_domains = [".ics.uci.edu/", ".cs.uci.edu/", ".informatics.uci.edu/", ".stat.uci.edu/"]
         if all(domain not in url for domain in valid_domains):
             # print(url)
+            return False
+        
+        # detect repeated segments in url
+        pieces = url.split("/")
+        if len(pieces) - len(set(pieces)) > URL_REPEAT_THRESH:
             return False
         
         if parsed.scheme not in set(["http", "https"]):

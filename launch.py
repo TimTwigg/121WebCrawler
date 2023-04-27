@@ -5,7 +5,6 @@ from utils.server_registration import get_cache_server
 from utils.config import Config
 from crawler import Crawler
 
-
 def main(config_file, restart):
     cparser = ConfigParser()
     cparser.read(config_file)
@@ -15,8 +14,7 @@ def main(config_file, restart):
     try:
         crawler.start()
     except:
-        crawler.frontier.save.sync()
-
+        crawler.frontier.save_all()
 
 if __name__ == "__main__":
     parser = ArgumentParser()
