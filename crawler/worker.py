@@ -31,6 +31,11 @@ class Worker(Thread):
             
             # added code to keep track of info about scraped pages
             ########################################################
+            # catch bad requests
+            if resp.status != 200:
+                time.sleep(self.config.time_delay)
+                continue
+            
             tokens = to_tokens(resp.raw_response.content)
             
             # add tokens to tokens count dict
