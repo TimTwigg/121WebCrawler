@@ -89,13 +89,14 @@ class Frontier(object):
         self.save[urlhash] = (url, True)
         self.seen_count += 1
         self.save.sync()
+        self.save_bank()
 
     def save_summary(self):
         top50words = "\n\t".join(f"{item[0]}: {item[1]}" for item in self.get_top_50_words())
         with open("summary.txt", "w") as f:
             info = \
 f"""Total Sites Crawled: {self.seen_count}
-Number of Domains Crawled: {len(self.domains)}
+Number of ics.uci.edu Subdomains Crawled: {len(self.domains)}
 Longest Site URL: {self.longestSiteURL}
 Length of Longest Site: {self.longestSiteLength}
 Top 50 Words:
