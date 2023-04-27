@@ -21,9 +21,9 @@ class Frontier(object):
         self.tokens: dict[str: int] = {}
         """tokens has the structure: \n
                 { token: count }"""
-        self.domains: dict[str: dict[str: int]] = {}
+        self.domains: dict[str: int] = {}
         """domains has the structure: \n
-                { domainURL: { subdomainURL: numPages } }
+                { subdomainURL: numPages }
         """
         self.longestSiteURL = None
         self.longestSiteLength = 0

@@ -5,7 +5,6 @@ To view this markdown nicely:
 -->
 
 # 121 Web Crawler ToDo
-- Keep track of subdomains and the number of pages per subdomain. I've set up a domains data structure in the frontier. Worker should add domains and subdomains as it encounters them. The domains structure is loaded and saved by `frontier.load_bank()` and `frontier.save_bank()`
 - Use robots.txt? Lecture 6.5 slides.
 - Detect redirects?
 

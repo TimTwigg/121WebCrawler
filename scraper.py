@@ -40,9 +40,9 @@ def extract_next_links(url, resp):
                             fragment=parsed_relative.fragment).geturl()
         
         links.add(l)
-    # return list(links)
+    return list(links)
     # return list(links)[:1]
-    return []
+    # return []
 
 def is_relative(url):
     return urlparse(url).scheme == ""
