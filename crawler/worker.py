@@ -1,4 +1,5 @@
 from threading import Thread
+from urllib.parse import urlparse
 
 from inspect import getsource
 from utils.download import download
@@ -31,17 +32,29 @@ class Worker(Thread):
             # added code to keep track of info about scraped pages
             ########################################################
             tokens = to_tokens(resp.raw_response.content)
+            
             # add tokens to tokens count dict
             self.frontier.tokens = mergeDicts(self.frontier.tokens, computeWordFrequencies(tokens))
+            
             # update longest site
             if len(tokens) > self.frontier.longestSiteLength:
                 self.frontier.longestSiteLength = len(tokens)
                 self.frontier.longestSiteURL = tbd_url
+            
+            # track ics.uci.edu subdomains
+            if ".ics.uci.edu" in tbd_url:
+                # Subdomains can be uniquely identified by the entire domain
+                # We can use entire domain as key, no need to extract subdomain
+                parsed_url = urlparse(tbd_url)
+                domain = parsed_url.netloc
+                self.frontier.domains[domain] = self.frontier.domains.get(domain, 0) + 1
+            
             # compute fingerprint and use it to compare similarity
             fp = fingerprint(tokens)
             if self.frontier.similarToBank(fp):
                 # do not scrape if the content is too similar to one we've already scraped
                 continue
+            
             self.frontier.bank[get_urlhash(tbd_url)] = fp
             ########################################################
             

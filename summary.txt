@@ -1,0 +1,55 @@
+Total Sites Crawled: 11
+Number of Domains Crawled: 3
+Longest Site URL: https://www.informatics.uci.edu/very-top-footer-menu-items/people
+Length of Longest Site: 2213
+Top 50 Words:
+	uci: 217
+	edu: 184
+	and: 138
+	of: 135
+	the: 105
+	ics: 103
+	informatics: 101
+	phd: 90
+	professor: 79
+	research: 77
+	s: 73
+	software: 60
+	to: 59
+	engineering: 59
+	in: 51
+	949: 50
+	824: 48
+	computer: 45
+	for: 44
+	career: 41
+	dbh: 41
+	students: 40
+	science: 37
+	student: 36
+	2022: 35
+	faculty: 35
+	graduate: 35
+	a: 33
+	department: 33
+	ph: 32
+	d: 32
+	statistics: 30
+	data: 30
+	undergraduate: 30
+	information: 27
+	is: 26
+	policies: 26
+	resources: 25
+	our: 25
+	news: 24
+	ms: 24
+	b: 23
+	we: 22
+	bren: 21
+	program: 21
+	contact: 19
+	development: 19
+	course: 19
+	how: 18
+	master: 18
