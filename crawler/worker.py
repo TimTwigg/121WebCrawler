@@ -1,11 +1,15 @@
 from threading import Thread
 
 from inspect import getsource
+from urllib.parse import urlparse
+
 from utils.download import download
 from utils import get_logger, get_urlhash
 import scraper
 import time
 from a1 import to_tokens
+
+import tldextract
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
@@ -31,6 +35,19 @@ class Worker(Thread):
             # added code to keep track of info about scraped pages
             tokens = to_tokens(resp.raw_response.content)
             self.frontier.bank[get_urlhash(tbd_url)] = tokens
+
+            # Only track subdomain for ics.uci.edu domain
+            if ".ics.uci.edu" in tbd_url:
+                # Subdomains can be uniquely identified by the entire domain
+                # We can use entire domain as key, no need to extract subdomain
+                parsed_url = urlparse(tbd_url)
+                domain = parsed_url.netloc
+
+                if domain not in self.frontier.domains:
+                    self.frontier.domains[domain] = 1
+                else:
+                    self.frontier.domains[domain] += 1
+
             length = sum(tokens.items(), key = lambda x: x[1])
             if length > self.frontier.longestSiteLength:
                 self.frontier.longestSiteLength = length

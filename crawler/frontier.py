@@ -19,7 +19,7 @@ class Frontier(object):
                 { hashedURL: { token: count } }"""
         self.domains: dict[str: dict[str: int]]
         """domains has the structure: \n
-                { domainURL: { subdomainURL: numPages } }
+                { subdomainURL: numPages }
         """
         self.longestSiteURL = None
         self.longestSiteLength = 0
