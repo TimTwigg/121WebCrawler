@@ -5,7 +5,7 @@ from utils.download import download
 from utils import get_logger, get_urlhash
 import scraper
 import time
-from a1 import to_tokens
+from helpers import to_tokens, fingerprint, computeWordFrequencies, mergeDicts
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
@@ -29,13 +29,21 @@ class Worker(Thread):
                 f"using cache {self.config.cache_server}.")
             
             # added code to keep track of info about scraped pages
+            ########################################################
             tokens = to_tokens(resp.raw_response.content)
-            self.frontier.bank[get_urlhash(tbd_url)] = tokens
-            length = sum(tokens.items(), key = lambda x: x[1])
-            if length > self.frontier.longestSiteLength:
-                self.frontier.longestSiteLength = length
+            # add tokens to tokens count dict
+            self.frontier.tokens = mergeDicts(self.frontier.tokens, computeWordFrequencies(tokens))
+            # update longest site
+            if len(tokens) > self.frontier.longestSiteLength:
+                self.frontier.longestSiteLength = len(tokens)
                 self.frontier.longestSiteURL = tbd_url
-            #
+            # compute fingerprint and use it to compare similarity
+            fp = fingerprint(tokens)
+            if self.frontier.similarToBank(fp):
+                # do not scrape if the content is too similar to one we've already scraped
+                continue
+            self.frontier.bank[get_urlhash(tbd_url)] = fp
+            ########################################################
             
             scraped_urls = scraper.scraper(tbd_url, resp)
             for scraped_url in scraped_urls:

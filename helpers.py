@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 from bs4.element import Comment
+from hashlib import sha256
+from typing import Iterable
 
 def tokenize(input_str: str) -> list[str]:
     """File Tokenizer
@@ -54,22 +56,32 @@ def tag_visible(element):
         return False
     return True
 
-def to_tokens(htmlContent: str) -> dict[str: int]:
-    soup = BeautifulSoup(htmlContent)
+def to_tokens(htmlContent: str) -> list[str]:
+    soup = BeautifulSoup(htmlContent, "lxml")
     texts = [t for t in soup.findAll(text = True) if tag_visible(t)]
     tokens = [tok for t in texts for tok in tokenize(t)]
-    return computeWordFrequencies(tokens)
+    return tokens
 
-def compareSiteFreqs(tokens1: list[str], tokens2: list[str]) -> float:
-    """Compare the tokens in two sites for common tokens and return the percentage of commonality
+def ngrams(tokens: str, n: int = 3) -> Iterable[tuple[str]]:
+    return zip(*[tokens[i:] for i in range(n)])
+
+def hash(text: str) -> str:
+    return sha256(text.encode("utf-8")).hexdigest()
+
+def fingerprint(tokens: list[str], q: int = 4) -> set[str]:
+    """Create a Fingerprint for the text represented by the given token list
     
     Args:
-        tokens1 (list[str]): the first token set
-        tokens2 (list[str]): the second token set
+        tokens (list[str]): the list of tokens
+        q (int): optional. Modulo parameter for hash subset selection. Defaults to 4.
     
     Returns:
-        float: the average of the percentages of each set of tokens which are common
+        str: the hex fingerprint set
     """
-    
-    common = set(tokens1).intersection(tokens2)
-    return ((len(common) / len(tokens1)) + (len(common) / len(tokens2))) / 2
+    return set(h for h in [hash(" ".join(t)) for t in ngrams(tokens)] if int(h, 16) % q == 0)
+
+def mergeDicts(x: dict[str: int], y: dict[str: int]) -> dict[str: int]:
+    return {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
+
+def similarity(x: set[str], y: set[str]) -> float:
+    return len(x.intersection(y)) / len(x.union(y))
