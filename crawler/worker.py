@@ -10,8 +10,6 @@ import scraper
 import time
 from helpers import to_tokens, fingerprint, computeWordFrequencies, mergeDicts
 
-import tldextract
-
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
         self.logger = get_logger(f"Worker-{worker_id}", "Worker")
@@ -48,7 +46,7 @@ class Worker(Thread):
             #     self.frontier.mark_url_complete(tbd_url)
             #     time.sleep(self.config.time_delay)
             # # Catch bad status
-            elif resp.status != 200:
+            if resp.status != 200:
                 self.frontier.mark_url_complete(tbd_url)
                 time.sleep(self.config.time_delay)
                 continue
