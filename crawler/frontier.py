@@ -6,7 +6,6 @@ import json
 
 from utils import get_logger, get_urlhash, normalize
 from scraper import is_valid
-from helpers import similarity
 
 class Frontier(object):
     def __init__(self, config, restart):
@@ -15,6 +14,8 @@ class Frontier(object):
         self.to_be_downloaded = Queue()
         self.seen_count = 0
         "The number of unique sites seen."
+        self.not_found_count = 0
+        "The number of 404 responses received."
         self.bank: dict[str: set[str]] = {}
         """bank has the structure: \n
                 { hashedURL: hash fingerprint set }"""
@@ -98,6 +99,7 @@ class Frontier(object):
         with open("summary.txt", "w") as f:
             info = \
 f"""Total Sites Crawled: {self.seen_count}
+Total Sites Crawled Excluding 404s: {self.seen_count - self.not_found_count}
 Number of ics.uci.edu Subdomains Crawled: {len(self.domains)}
 Longest Site URL: {self.longestSiteURL}
 Length of Longest Site: {self.longestSiteLength}
@@ -108,13 +110,12 @@ Top 50 Words:
     
     def save_bank(self):
         with open("bank.json", "w") as f:
-            json.dump([{k:list(v) for k,v in self.bank.items()}, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength], f, indent = 4)
+            json.dump([self.bank, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength, self.not_found_count], f, indent = 4)
             
     def load_bank(self):
         try:
             with open("bank.json", "r") as f:
-                bank, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength = json.load(f)
-            self.bank = {k: set(v) for k,v in bank.items()} 
+                self.bank, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength, self.not_found_count = json.load(f)
         except FileNotFoundError:
             pass
     
