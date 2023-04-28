@@ -10,8 +10,6 @@ import scraper
 import time
 from helpers import to_tokens, fingerprint, computeWordFrequencies, mergeDicts
 
-import tldextract
-
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
         self.logger = get_logger(f"Worker-{worker_id}", "Worker")
@@ -52,7 +50,6 @@ class Worker(Thread):
                 # Add it to the frontier
                 print("Redirect: tbd_url, resp.url")
                 self.frontier.add_url(resp.url)
-
                 self.handle_bad_url(tbd_url)
                 continue
             # elif resp.status == 404:
