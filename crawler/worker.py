@@ -28,8 +28,8 @@ class Worker(Thread):
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
-            
-            # self.logger.info(f"About to download {tbd_url}")
+
+            self.logger.info(f"About to download {tbd_url}")
             resp = download(tbd_url, self.config, self.logger)
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
@@ -44,9 +44,12 @@ class Worker(Thread):
                 # Add it to the frontier
                 print("Redirect: tbd_url, resp.url")
                 self.frontier.add_url(resp.url)
-
-            # Catch bad status
+            # elif resp.status == 404:
+            #     self.frontier.mark_url_complete(tbd_url)
+            #     time.sleep(self.config.time_delay)
+            # # Catch bad status
             elif resp.status != 200:
+                self.frontier.mark_url_complete(tbd_url)
                 time.sleep(self.config.time_delay)
                 continue
             
