@@ -41,9 +41,10 @@ class Worker(Thread):
             # Means that requests.get failed and need to retry url
             if resp.status == -1:
                 urlhash = get_urlhash(tbd_url)
-                del self.save[urlhash]
+                del self.frontier.save[urlhash]
                 self.frontier.add_url(tbd_url)
                 time.sleep(self.config.time_delay)
+                continue
             if 300 <= resp.status <= 399:
                 # https://stackoverflow.com/a/50606372
                 # resp.url should be the url from the redirect
@@ -52,10 +53,11 @@ class Worker(Thread):
                 self.frontier.add_url(resp.url)
                 self.handle_bad_url(tbd_url)
                 continue
-            # elif resp.status == 404:
-            #     self.frontier.mark_url_complete(tbd_url)
-            #     time.sleep(self.config.time_delay)
-            # # Catch bad status
+            elif resp.status == 404:
+                self.handle_bad_url(tbd_url)
+                self.frontier.not_found_count += 1
+                continue
+            # Catch bad status
             elif resp.status != 200:
                 self.handle_bad_url(tbd_url)
                 continue
@@ -88,7 +90,6 @@ class Worker(Thread):
             
             self.frontier.bank[get_urlhash(tbd_url)] = fp
             ########################################################
-            self.logger.info("done adding to bank")
             scraped_urls = scraper.scraper(tbd_url, resp)
             for scraped_url in scraped_urls:
                 self.frontier.add_url(scraped_url)
