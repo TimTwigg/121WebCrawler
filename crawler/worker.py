@@ -2,11 +2,15 @@ from threading import Thread
 from urllib.parse import urlparse
 
 from inspect import getsource
+from urllib.parse import urlparse
+
 from utils.download import download
 from utils import get_logger, get_urlhash
 import scraper
 import time
 from helpers import to_tokens, fingerprint, computeWordFrequencies, mergeDicts
+
+import tldextract
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
@@ -24,6 +28,8 @@ class Worker(Thread):
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
+            
+            # self.logger.info(f"About to download {tbd_url}")
             resp = download(tbd_url, self.config, self.logger)
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
@@ -31,8 +37,16 @@ class Worker(Thread):
             
             # added code to keep track of info about scraped pages
             ########################################################
-            # catch bad requests
-            if resp.status != 200:
+            # Handle redirects
+            if 300 <= resp.status <= 399:
+                # https://stackoverflow.com/a/50606372
+                # resp.url should be the url from the redirect
+                # Add it to the frontier
+                print("Redirect: tbd_url, resp.url")
+                self.frontier.add_url(resp.url)
+
+            # Catch bad status
+            elif resp.status != 200:
                 time.sleep(self.config.time_delay)
                 continue
             
@@ -58,6 +72,7 @@ class Worker(Thread):
             fp = fingerprint(tokens)
             if self.frontier.similarToBank(fp):
                 # do not scrape if the content is too similar to one we've already scraped
+                time.sleep(self.config.time_delay)
                 continue
             
             self.frontier.bank[get_urlhash(tbd_url)] = fp
