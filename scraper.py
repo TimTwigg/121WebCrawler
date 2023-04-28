@@ -56,7 +56,7 @@ def is_valid(url):
 
         # Checks if any of the valid domains is in URL
         # Returns False if url doesn't contain them
-        valid_domains = [".ics.uci.edu/", ".cs.uci.edu/", ".informatics.uci.edu/", ".stat.uci.edu/"] //filter out clubs
+        valid_domains = [".ics.uci.edu/", ".cs.uci.edu/", ".informatics.uci.edu/", ".stat.uci.edu/"]   # filter out clubs
         if all(domain not in url for domain in valid_domains):
             # print(url)
             return False
