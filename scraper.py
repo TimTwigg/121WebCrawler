@@ -8,6 +8,8 @@ def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
+links = set() #total valid num of links
+
 def extract_next_links(url, resp):
     # Implementation required.
     # url: the URL that was used to get the page
@@ -20,7 +22,7 @@ def extract_next_links(url, resp):
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     
     soup = BeautifulSoup(resp.raw_response.content, "lxml")
-    links = set()
+    
     for link in soup.find_all("a"):
         l = link.get("href")
         # ignore <a> tags with no href
@@ -40,6 +42,7 @@ def extract_next_links(url, resp):
                             fragment=parsed_relative.fragment).geturl()
         
         links.add(l)
+    #numlinks = len(links)
     return list(links)
     # return list(links)[:1]
     # return []
