@@ -6,6 +6,7 @@ import json
 
 from utils import get_logger, get_urlhash, normalize
 from scraper import is_valid
+from helpers import similarity
 
 class Frontier(object):
     def __init__(self, config, restart):
@@ -14,10 +15,13 @@ class Frontier(object):
         self.to_be_downloaded = Queue()
         self.seen_count = 0
         "The number of unique sites seen."
-        self.bank: dict[str: dict[str: int]] = {}
+        self.bank: dict[str: set[str]] = {}
         """bank has the structure: \n
-                { hashedURL: { token: count } }"""
-        self.domains: dict[str: dict[str: int]]
+                { hashedURL: hash fingerprint set }"""
+        self.tokens: dict[str: int] = {}
+        """tokens has the structure: \n
+                { token: count }"""
+        self.domains: dict[str: int] = {}
         """domains has the structure: \n
                 { subdomainURL: numPages }
         """
@@ -85,25 +89,30 @@ class Frontier(object):
         self.save[urlhash] = (url, True)
         self.seen_count += 1
         self.save.sync()
+        self.save_bank()
 
     def save_summary(self):
+        top50words = "\n\t".join(f"{item[0]}: {item[1]}" for item in self.get_top_50_words())
         with open("summary.txt", "w") as f:
-            info = f"""
-            Total Sites Crawled: {self.seen_count}
-            Number of Domains Crawled: {len(self.domains)}
-            Longest Site URL: {self.longestSiteURL}
-            Length of Longest Site: {self.longestSiteLength}
-            """
+            info = \
+f"""Total Sites Crawled: {self.seen_count}
+Number of ics.uci.edu Subdomains Crawled: {len(self.domains)}
+Longest Site URL: {self.longestSiteURL}
+Length of Longest Site: {self.longestSiteLength}
+Top 50 Words:
+\t{top50words}
+"""
             f.write(info)
     
     def save_bank(self):
         with open("bank.json", "w") as f:
-            json.dump([self.bank, self.domains, self.longestSiteURL, self.longestSiteLength], f)
+            json.dump([{k:list(v) for k,v in self.bank.items()}, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength], f, indent = 4)
             
     def load_bank(self):
         try:
             with open("bank.json", "r") as f:
-                self.bank, self.domains, self.longestSiteURL, self.longestSiteLength = json.load(f)
+                bank, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength = json.load(f)
+            self.bank = {k: set(v) for k,v in bank.items()} 
         except FileNotFoundError:
             pass
     
@@ -112,23 +121,10 @@ class Frontier(object):
         self.save_summary()
         self.save_bank()
 
-    # Gets the top 50 words and their counts
-    # Returns a dictionary containing those top 50 words
-    # dict(token: count)
-    def get_top_50_words(self) -> dict():
-        counts = dict()
-
-        for url, page_dict in self.bank.items():
-            for token, count in page_dict.items():
-                if token not in counts:
-                    counts[token] = count
-                else:
-                    counts[token] += count
-
-        sorted_dict = dict()
-
-        # Iterates over the first 50 tokens, adds them to new dict
-        for token, count in sorted(counts.items(), key=lambda x: -x[1])[:50]:
-            sorted_dict[token] = count
-
-        return sorted_dict
+    def get_top_50_words(self) -> list[tuple[str, int]]:
+        return sorted(self.tokens.items(), key = lambda item: -1 * item[1])[:50]
+    
+    # checks if a given fingerprint set is too similar to one in the bank
+    # the similarity score is compared to a float, 0.8 means 80% similarity.
+    def similarToBank(self, print: set[str]) -> bool:
+        return any((similarity(print, fp) > 0.8 for _,fp in self.bank.items()))
