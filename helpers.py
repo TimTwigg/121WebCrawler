@@ -68,7 +68,7 @@ def ngrams(tokens: str, n: int = 3) -> Iterable[tuple[str]]:
 def hash(text: str) -> str:
     return sha256(text.encode("utf-8")).hexdigest()
 
-def fingerprint(tokens: list[str], q: int = 4) -> set[str]:
+def fingerprint(tokens: list[str], q: int = 4) -> str:
     """Create a Fingerprint for the text represented by the given token list
     
     Args:
@@ -76,15 +76,15 @@ def fingerprint(tokens: list[str], q: int = 4) -> set[str]:
         q (int): optional. Modulo parameter for hash subset selection. Defaults to 4.
     
     Returns:
-        str: the hex fingerprint set
+        str: the hex fingerprint
     """
-    return set(h for h in [hash(" ".join(t)) for t in ngrams(tokens)] if int(h, 16) % q == 0)
+    return hash(" ".join([h for h in [hash(" ".join(t)) for t in ngrams(tokens)] if int(h, 16) % q == 0]))
 
 def mergeDicts(x: dict[str: int], y: dict[str: int]) -> dict[str: int]:
     return {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
 
-def similarity(x: set[str], y: set[str]) -> float:
-    try:
-        return len(x.intersection(y)) / len(x.union(y))
-    except ZeroDivisionError:
-        return 0
+# def similarity(x: set[str], y: set[str]) -> float:
+#     try:
+#         return len(x.intersection(y)) / len(x.union(y))
+#     except ZeroDivisionError:
+#         return 0

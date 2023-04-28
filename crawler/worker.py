@@ -10,8 +10,6 @@ import scraper
 import time
 from helpers import to_tokens, fingerprint, computeWordFrequencies, mergeDicts
 
-import tldextract
-
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
         self.logger = get_logger(f"Worker-{worker_id}", "Worker")
