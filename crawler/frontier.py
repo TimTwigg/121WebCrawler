@@ -13,6 +13,7 @@ class Frontier(object):
         self.logger = get_logger("FRONTIER")
         self.config = config
         self.to_be_downloaded = Queue()
+        self.seen_count = 0
         "The number of unique sites seen."
         self.bank: dict[str: set[str]] = {}
         """bank has the structure: \n
@@ -58,6 +59,8 @@ class Frontier(object):
             if not completed and is_valid(url):
                 self.to_be_downloaded.put(url)
                 tbd_count += 1
+            elif completed and is_valid(url):
+                self.seen_count += 1
         self.logger.info(
             f"Found {tbd_count} urls to be downloaded from {total_count} "
             f"total urls discovered.")
@@ -86,6 +89,7 @@ class Frontier(object):
                 f"Completed url {url}, but have not seen it before.")
 
         self.save[urlhash] = (url, True)
+        self.seen_count += 1
         self.save.sync()
         self.save_bank()
 
@@ -93,7 +97,7 @@ class Frontier(object):
         top50words = "\n\t".join(f"{item[0]}: {item[1]}" for item in self.get_top_50_words())
         with open("summary.txt", "w") as f:
             info = \
-f"""Total Sites Crawled: {len(self.bank)}
+f"""Total Sites Crawled: {self.seen_count}
 Number of ics.uci.edu Subdomains Crawled: {len(self.domains)}
 Longest Site URL: {self.longestSiteURL}
 Length of Longest Site: {self.longestSiteLength}
