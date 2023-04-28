@@ -50,12 +50,14 @@ class Worker(Thread):
                 # Add it to the frontier
                 print("Redirect: tbd_url, resp.url")
                 self.frontier.add_url(resp.url)
-            if resp.status == 404:
-                self.frontier.not_found_count += 1
-            # Catch bad status
-            if resp.status != 200:
-                self.frontier.mark_url_complete(tbd_url)
-                time.sleep(self.config.time_delay)
+                self.handle_bad_url(tbd_url)
+                continue
+            # elif resp.status == 404:
+            #     self.frontier.mark_url_complete(tbd_url)
+            #     time.sleep(self.config.time_delay)
+            # # Catch bad status
+            elif resp.status != 200:
+                self.handle_bad_url(tbd_url)
                 continue
             
             tokens = to_tokens(resp.raw_response.content)
