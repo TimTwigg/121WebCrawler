@@ -128,5 +128,5 @@ Top 50 Words:
     
     # checks if a given fingerprint set is too similar to one in the bank
     # the similarity score is compared to a float, 0.8 means 80% similarity.
-    def similarToBank(self, print: set[str]) -> bool:
-        return any((similarity(print, fp) > 0.8 for _,fp in self.bank.items()))
+    def similarToBank(self, fprint: str) -> bool:
+        return any(fprint == fp for _,fp in self.bank.items())

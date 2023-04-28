@@ -42,10 +42,7 @@ class Worker(Thread):
                 # Add it to the frontier
                 print("Redirect: tbd_url, resp.url")
                 self.frontier.add_url(resp.url)
-            # elif resp.status == 404:
-            #     self.frontier.mark_url_complete(tbd_url)
-            #     time.sleep(self.config.time_delay)
-            # # Catch bad status
+            # Catch bad status
             if resp.status != 200:
                 self.frontier.mark_url_complete(tbd_url)
                 time.sleep(self.config.time_delay)
@@ -73,6 +70,7 @@ class Worker(Thread):
             fp = fingerprint(tokens)
             if self.frontier.similarToBank(fp):
                 # do not scrape if the content is too similar to one we've already scraped
+                self.frontier.mark_url_complete(tbd_url)
                 time.sleep(self.config.time_delay)
                 continue
             
