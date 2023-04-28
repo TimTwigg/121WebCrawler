@@ -36,6 +36,14 @@ class Worker(Thread):
             # added code to keep track of info about scraped pages
             ########################################################
             # Handle redirects
+
+            # Special custom case
+            # Means that requests.get failed and need to retry url
+            if resp.status == -1:
+                urlhash = get_urlhash(tbd_url)
+                del self.save[urlhash]
+                self.frontier.add_url(tbd_url)
+                time.sleep(self.config.time_delay)
             if 300 <= resp.status <= 399:
                 # https://stackoverflow.com/a/50606372
                 # resp.url should be the url from the redirect
@@ -72,16 +80,24 @@ class Worker(Thread):
             fp = fingerprint(tokens)
             if self.frontier.similarToBank(fp):
                 # do not scrape if the content is too similar to one we've already scraped
-                self.frontier.mark_url_complete(tbd_url)
-                time.sleep(self.config.time_delay)
+                self.handle_bad_url(tbd_url)
+                self.logger.info("too similar")
                 continue
             
             self.frontier.bank[get_urlhash(tbd_url)] = fp
             ########################################################
-            
+            self.logger.info("done adding to bank")
             scraped_urls = scraper.scraper(tbd_url, resp)
             for scraped_url in scraped_urls:
                 self.frontier.add_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)
         self.frontier.save_all()
+
+    # idk what to name this function
+    # Standardized handling of bad urls
+    # Mark as complete
+    # Wait for politeness
+    def handle_bad_url(self, url: str):
+        self.frontier.mark_url_complete(url)
+        time.sleep(self.config.time_delay)

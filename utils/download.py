@@ -17,7 +17,12 @@ def download(url, config, logger=None):
         except (EOFError, ValueError) as e:
             pass
     except:
-        pass
+        # requests.get didn't succeed
+        # Special status code, will retry this url later?
+        logger.error(f"Failed to make request: {url}")
+        return Response({"error": f"Failed to make request: {url}",
+                         "status": -1,
+                         "url": url})
 
     logger.error(f"Spacetime Response error {resp} with url {url}.")
     return Response({
