@@ -114,6 +114,10 @@ class Worker(Thread):
                 self.frontier.add_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
             self.sleep_until_next_crawl()
+
+        self.frontier.stem_tokens()
+        self.frontier.remove_stop_words()
+        self.frontier.remove_non_english()
         self.frontier.save_all()
 
     # idk what to name this functions
