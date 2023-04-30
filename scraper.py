@@ -68,6 +68,9 @@ def is_valid(url):
 
         if "https://www.ics.uci.edu/~eppstein/pix/" in url:
             return False
+
+        if ".php" in url:
+            return False
         
         if parsed.scheme not in set(["http", "https"]):
             return False
