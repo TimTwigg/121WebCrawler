@@ -1,9 +1,12 @@
 import os
 import shelve
+import signal
 from threading import Thread, RLock
 from queue import Queue, Empty
 import json
+import time
 
+from helpers import similarity
 from utils import get_logger, get_urlhash, normalize
 from scraper import is_valid
 
@@ -109,13 +112,15 @@ Top 50 Words:
             f.write(info)
     
     def save_bank(self):
+        self.logger.info(f"Seen: {self.seen_count}, Bank Size: {len(self.bank)}, NotFoundCount: {self.not_found_count}")
         with open("bank.json", "w") as f:
-            json.dump([self.bank, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength, self.not_found_count], f, indent = 4)
+            json.dump([{k:list(v) for k,v in self.bank.items()}, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength, self.not_found_count], f, indent = 4)
             
     def load_bank(self):
         try:
             with open("bank.json", "r") as f:
-                self.bank, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength, self.not_found_count = json.load(f)
+                bank, self.tokens, self.domains, self.longestSiteURL, self.longestSiteLength, self.not_found_count = json.load(f)
+            self.bank = {k: set(v) for k, v in bank.items()}
         except FileNotFoundError:
             pass
     
@@ -129,5 +134,5 @@ Top 50 Words:
     
     # checks if a given fingerprint set is too similar to one in the bank
     # the similarity score is compared to a float, 0.8 means 80% similarity.
-    def similarToBank(self, fprint: str) -> bool:
-        return any(fprint == fp for _,fp in self.bank.items())
+    def similarToBank(self, fprint: set[str]) -> bool:
+        return any((similarity(fprint, fp) > 0.8 for fp in self.bank.values()))
