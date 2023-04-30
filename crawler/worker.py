@@ -35,6 +35,16 @@ class Worker(Thread):
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
+
+            if resp and resp.raw_response and resp.raw_response.content:
+                # Bigger than 10MB webpage
+                if len(resp.raw_response.content) > 10000000:
+                    self.logger.info(f"URL {tbd_url} too big")
+                    self.handle_bad_url(tbd_url)
+            elif resp.raw_response == None:
+                # Spacetime error
+                self.handle_bad_url(tbd_url)
+                continue
             
             # added code to keep track of info about scraped pages
             ########################################################
@@ -52,7 +62,7 @@ class Worker(Thread):
                 # https://stackoverflow.com/a/50606372
                 # resp.url should be the url from the redirect
                 # Add it to the frontier
-                print("Redirect: tbd_url, resp.url")
+                self.logger.info("Redirect: tbd_url, resp.url")
                 self.frontier.add_url(resp.url)
                 self.handle_bad_url(tbd_url)
                 continue
@@ -74,6 +84,9 @@ class Worker(Thread):
             if len(tokens) > self.frontier.longestSiteLength:
                 self.frontier.longestSiteLength = len(tokens)
                 self.frontier.longestSiteURL = tbd_url
+
+            self.logger.info(f"Token Count: {len(tokens)}")
+            self.logger.info(f"Response length: {len(resp.raw_response.content)}")
             
             # track ics.uci.edu subdomains
             if ".ics.uci.edu" in tbd_url:
@@ -89,7 +102,7 @@ class Worker(Thread):
             if self.frontier.similarToBank(fp):
                 # do not scrape if the content is too similar to one we've already scraped
                 self.handle_bad_url(tbd_url)
-                # self.logger.info("too similar")
+                self.logger.info("too similar")
                 continue
 
             # self.logger.info(f"Ending similarity comparison {tbd_url}")
