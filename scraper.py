@@ -65,6 +65,12 @@ def is_valid(url):
         pieces = url.split("/")
         if len(pieces) - len(set(pieces)) > URL_REPEAT_THRESH:
             return False
+
+        if "https://www.ics.uci.edu/~eppstein/pix/" in url:
+            return False
+
+        if ".php" in url:
+            return False
         
         if parsed.scheme not in set(["http", "https"]):
             return False
@@ -72,10 +78,10 @@ def is_valid(url):
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
-            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|ps|eps|tex|ppt|pptx|ppsx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
-            + r"|thmx|mso|arff|rtf|jar|csv|txt"
+            + r"|thmx|mso|arff|rtf|jar|csv|txt|ipynb|php|bib|xml"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
 
     except TypeError:
