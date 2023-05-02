@@ -12,6 +12,7 @@ from helpers import to_tokens, fingerprint, computeWordFrequencies, mergeDicts
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
+        nltk.download('words')
         self.logger = get_logger(f"Worker-{worker_id}", "Worker")
         self.config = config
         self.frontier = frontier
@@ -79,19 +80,20 @@ class Worker(Thread):
             
             # add tokens to tokens count dict
             self.frontier.tokens = mergeDicts(self.frontier.tokens, computeWordFrequencies(tokens))
+
+            valid_words = set(nltk.corpus.words.words())
+            token_copy = dict(tokens)
+
+            for token in token_copy:
+                if token not in valid_words:
+                    del tokens[token]
+                elif len(token) <= 1:
+                    # Remove the case where the token is a single letter
+                    # This is sometimes a "valid" word like 'e'
+                    del tokens[token]
             
             # update longest site
             if len(tokens) > self.frontier.longestSiteLength:
-                valid_words = set(nltk.corpus.words.words())
-                token_copy = dict(tokens)
-
-                for token in token_copy:
-                    if token not in valid_words:
-                        del tokens[token]
-                    elif len(token) <= 1:
-                        # Remove the case where the token is a single letter
-                        # This is sometimes a "valid" word like 'e'
-                        del tokens[token]
                 self.frontier.longestSiteLength = len(tokens)
                 self.frontier.longestSiteURL = tbd_url
 
