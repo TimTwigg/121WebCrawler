@@ -1,6 +1,6 @@
 from threading import Thread
 from urllib.parse import urlparse
-
+import nltk
 from inspect import getsource
 from urllib.parse import urlparse
 
@@ -82,6 +82,16 @@ class Worker(Thread):
             
             # update longest site
             if len(tokens) > self.frontier.longestSiteLength:
+                valid_words = set(nltk.corpus.words.words())
+                token_copy = dict(tokens)
+
+                for token in token_copy:
+                    if token not in valid_words:
+                        del tokens[token]
+                    elif len(token) <= 1:
+                        # Remove the case where the token is a single letter
+                        # This is sometimes a "valid" word like 'e'
+                        del tokens[token]
                 self.frontier.longestSiteLength = len(tokens)
                 self.frontier.longestSiteURL = tbd_url
 
