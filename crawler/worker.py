@@ -82,15 +82,15 @@ class Worker(Thread):
             self.frontier.tokens = mergeDicts(self.frontier.tokens, computeWordFrequencies(tokens))
 
             valid_words = set(nltk.corpus.words.words())
-            token_copy = dict(tokens)
+            token_copy = list(tokens)
 
             for token in token_copy:
                 if token not in valid_words:
-                    del tokens[token]
+                    tokens.remove(token)
                 elif len(token) <= 1:
                     # Remove the case where the token is a single letter
                     # This is sometimes a "valid" word like 'e'
-                    del tokens[token]
+                    tokens.remove(token)
             
             # update longest site
             if len(tokens) > self.frontier.longestSiteLength:
