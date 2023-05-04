@@ -69,7 +69,7 @@ def ngrams(tokens: str, n: int = 3) -> Iterable[tuple[str]]:
 #     return sha256(text.encode("utf-8")).hexdigest()
 
 
-def fingerprint(tokens: list[str], q: int = 25) -> set[str]:
+def fingerprint(tokens: list[str], q: int = 4) -> set[str]:
     """Create a Fingerprint for the text represented by the given token list
     
     Args:
