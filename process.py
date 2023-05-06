@@ -21,3 +21,5 @@ tokens = [tok for tok in sorted(data[1].items(), key = lambda x: (-x[1], x[0])) 
 
 with open("top50.txt", "w") as f:
     f.write("\n".join(f"{tok}: {val}" for tok,val in tokens[:50]))
+
+print("Length of Bank:", len(data[0]))
