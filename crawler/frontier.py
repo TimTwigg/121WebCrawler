@@ -5,10 +5,6 @@ from threading import Thread, RLock
 from queue import Queue, Empty
 import json
 import time
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem.snowball import SnowballStemmer
-
 
 from helpers import similarity
 from utils import get_logger, get_urlhash, normalize
@@ -16,8 +12,6 @@ from scraper import is_valid
 
 class Frontier(object):
     def __init__(self, config, restart):
-        nltk.download('stopwords')
-        nltk.download('words')
         self.logger = get_logger("FRONTIER")
         self.config = config
         self.to_be_downloaded = Queue()
@@ -137,44 +131,7 @@ Top 50 Words:
 
     def get_top_50_words(self) -> list[tuple[str, int]]:
         return sorted(self.tokens.items(), key = lambda item: -1 * item[1])[:50]
-
-    def remove_stop_words(self):
-        stop_words = set(stopwords.words('english'))
-        token_copy = dict(self.tokens)
-
-        for token in token_copy:
-            if token in stop_words:
-                del self.tokens[token]
-
-    def remove_non_english(self):
-        valid_words = set(nltk.corpus.words.words())
-        token_copy = dict(self.tokens)
-
-        for token in token_copy:
-            if token not in valid_words:
-                del self.tokens[token]
-            elif len(token) <= 1:
-                # Remove the case where the token is a single letter
-                # This is sometimes a "valid" word like 'e'
-                del self.tokens[token]
-
-    # Simplifies words to their base forms
-    def stem_tokens(self):
-        # https://www.nltk.org/howto/stem.html
-        stemmer = SnowballStemmer('english')
-
-        new_tokens = dict()
-
-        for token, count in self.tokens.items():
-            stemmed_token = stemmer.stem(token)
-
-            if stemmed_token not in new_tokens:
-                new_tokens[stemmed_token] = count
-            else:
-                new_tokens[stemmed_token] += count
-
-        self.tokens = new_tokens
-
+    
     # checks if a given fingerprint set is too similar to one in the bank
     # the similarity score is compared to a float, 0.8 means 80% similarity.
     def similarToBank(self, fprint: set[str]) -> bool:
